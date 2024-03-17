@@ -1,31 +1,48 @@
-extern crate sdl3;
+extern crate sdl2;
 
-use sdl3::event::Event;
-use sdl3::keyboard::Keycode;
-use sdl3::pixels::Color;
+mod draw_terrain;
+
+use sdl2::event::Event;
+use sdl2::keyboard::Keycode;
+use sdl2::rect::Rect;
+use sdl2::render::WindowCanvas;
+use sdl2::video::Window;
+use sdl2::{Sdl, VideoSubsystem};
 use std::time::Duration;
 
 pub fn main() {
-    let sdl_context = sdl3::init().unwrap();
-    let video_subsystem = sdl_context.video().unwrap();
+    let sdl_context: Sdl = sdl2::init().unwrap();
+    let video_subsystem: VideoSubsystem = sdl_context.video().unwrap();
 
-    let window = video_subsystem
-        .window("rust-sdl3 demo", 800, 600)
+    let window: Window = video_subsystem
+        .window("rust-sdl2 demo", 800, 600)
+        .resizable()
         .position_centered()
         .build()
         .unwrap();
 
-    let mut canvas = window.into_canvas().build().unwrap();
+    let mut canvas: WindowCanvas = window.into_canvas().build().unwrap();
 
-    canvas.set_draw_color(Color::RGB(0, 255, 255));
-    canvas.clear();
-    canvas.present();
     let mut event_pump = sdl_context.event_pump().unwrap();
-    let mut i = 0;
+
+    // Set background color to black
+    canvas.set_draw_color((0, 0, 0));
+    canvas.clear();
+
+    canvas.set_draw_color((255, 255, 255));
+
     'running: loop {
-        i = (i + 1) % 255;
-        canvas.set_draw_color(Color::RGB(i, 64, 255 - i));
-        canvas.clear();
+        // gets the canvas size
+        let (x, y) = canvas.window().size();
+        match canvas.draw_rect(Rect::new(
+            ((x - 200) / 2) as i32,
+            ((y - 200) / 2) as i32,
+            200,
+            200,
+        )) {
+            Ok(f) => f,
+            Err(_) => panic!("Error drawing rectangle"),
+        };
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit { .. }

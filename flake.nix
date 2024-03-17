@@ -14,7 +14,7 @@
       devShells.${system}.default =
         pkgs.mkShell # .override { stdenv = pkgs.clangStdenv; } # for C dev
         {
-          packages = with pkgs; [ cargo rustc rust-analyzer rustfmt ];
+          packages = with pkgs; [ cargo rustc rust-analyzer rustfmt SDL2 ];
           shellHook = "";
         };
 
