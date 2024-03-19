@@ -1,9 +1,11 @@
 extern crate sdl2;
 
+mod colors;
 mod draw_terrain;
 
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
+use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 use sdl2::render::WindowCanvas;
 use sdl2::video::Window;
@@ -26,7 +28,7 @@ pub fn main() {
     let mut event_pump = sdl_context.event_pump().unwrap();
 
     // Set background color to black
-    canvas.set_draw_color((0, 0, 0));
+    canvas.set_draw_color(BLACK);
     canvas.clear();
 
     canvas.set_draw_color((255, 255, 255));
