@@ -13,11 +13,18 @@ layout {
 		pane command="lazygit"
 	}
 
+	tab name="test" {
+		pane command="cargo" {
+			args "test"
+		}
+	}
+
 	tab name="compile" {
 		pane command="cargo" {
 			args "run"
 		}
 	}
+
 
 	// tab name="watcher" {
 	// 	pane cwd="./" command="typst"{
