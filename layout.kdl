@@ -13,36 +13,17 @@ layout {
 		pane command="lazygit"
 	}
 
-	tab name="test" {
-		pane command="cargo" {
-			args "test"
-		}
-	}
-
 	tab name="compile" {
 		pane command="cargo" {
 			args "run"
 		}
 	}
 
-
-	// tab name="watcher" {
-	// 	pane cwd="./" command="typst"{
-	// 		args "watch" "main.typ"
-	// 	}
-	// }
-
-	// tab name="zathura" {
-	// 	pane cwd="./" command="zathura"{
-	// 		args "main.pdf"
-	// 	}
-	// }
-
-	// tab name="run" {
-	// 	pane cwd="./" command="cargo" {
-	// 		args "run"
-	// 	}
-	// }
+	tab name="test" {
+		pane command="cargo" {
+			args "test"
+		}
+	}
 	
 	tab name="editor" {
 		pane cwd="./" command="hx" {

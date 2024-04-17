@@ -1,1 +1,4 @@
-.direnv
+.direnv/
+*.lock
+layout.kdl
+.envrc
