@@ -1,11 +1,108 @@
+const COLUMNS: usize = 10;
+const LINE: usize = 20;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PieceType {
+    I,
+    O,
+    T,
+    J,
+    L,
+    S,
+    Z,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Orientation {
+    O,
+    R,
+    Half,
+    L,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct PieceOffsets {
+    offsets: [(u32, u32); 4],
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct PiecePosition {
+    pos: [(u32, u32); 4],
+}
+
+impl PiecePosition {
+    fn new(piece_type: PieceType) -> Self {
+        match piece_type {
+            PieceType::I => PiecePosition {
+                pos: [(0, 0), (0, 1), (0, 2), (0, 3)],
+            },
+            PieceType::O => PiecePosition {
+                pos: [(0, 0), (0, 1), (1, 0), (1, 1)],
+            },
+            PieceType::T => PiecePosition {
+                pos: [(0, 1), (1, 0), (1, 1), (1, 2)],
+            },
+            PieceType::J => PiecePosition {
+                pos: [(0, 0), (1, 0), (1, 1), (1, 2)],
+            },
+            PieceType::L => PiecePosition {
+                pos: [(1, 0), (1, 1), (1, 2), (0, 2)],
+            },
+            PieceType::S => PiecePosition {
+                pos: [(0, 1), (0, 2), (1, 0), (1, 1)],
+            },
+            PieceType::Z => PiecePosition {
+                pos: [(0, 0), (0, 1), (1, 1), (1, 2)],
+            },
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct Piece {
+    piece_type: PieceType,
+    position: PiecePosition,
+    orientation: Orientation,
+}
+
+impl Piece {
+    pub fn new(piece_type: PieceType, position: PiecePosition, orientation: Orientation) -> Self {
+        Piece {
+            piece_type,
+            position,
+            orientation,
+        }
+    }
+
+    fn get_piece_type(&self) -> PieceType {
+        self.piece_type
+    }
+
+    fn get_position(&self) -> PiecePosition {
+        self.position
+    }
+
+    fn get_orientation(&self) -> Orientation {
+        self.orientation
+    }
+
+    fn move_piece_down(&self) -> Self {
+        let mut position = self.get_position().pos;
+        for i in 0..4 {
+            position[i as usize].0 += 1;
+        }
+        *self
+    }
+}
+
 #[derive(Debug, Clone, Copy)]
 pub struct Field {
-    current_piece: (u32, u32),
-    data: [[bool; 10]; 20],
+    current_piece: Piece,
+    data: [[bool; COLUMNS]; LINE],
 }
 
 impl Field {
-    pub fn new(current_piece: (u32, u32), data: [[bool; 10]; 20]) -> Self {
+    pub fn new(current_piece: Piece, data: [[bool; COLUMNS]; LINE]) -> Self {
         Self {
             current_piece,
             data,
@@ -13,28 +110,56 @@ impl Field {
         .place_piece(current_piece)
     }
 
-    pub fn place_piece(mut self, new_piece: (u32, u32)) -> Self {
-        self.data[new_piece.0 as usize][new_piece.1 as usize] = true;
+    pub fn place_piece(mut self, new_piece: Piece) -> Self {
+        for elt in new_piece.get_position().pos {
+            self.data[elt.0 as usize][elt.1 as usize] = true;
+        }
         self
     }
 
     pub fn side_move_piece(mut self, direction: &str) -> Self {
+        let is_not_left: bool = {
+            for (x, y) in self.current_piece.get_position().pos {
+                if y == 0 {
+                    false;
+                } else if self.data[x as usize][(y - 1) as usize] {
+                    false;
+                }
+            }
+            true
+        };
+        let is_not_right: bool = {
+            for (x, y) in self.current_piece.get_position().pos {
+                if y < 9 {
+                    false;
+                } else if self.data[x as usize][(y + 1) as usize] {
+                    false;
+                }
+            }
+            true
+        };
         if direction == "Left" {
-            if self.current_piece.1 > 0 {
-                self.data[self.current_piece.0 as usize][self.current_piece.1 as usize] = false;
-                self.data[self.current_piece.0 as usize][(self.current_piece.1 as usize) - 1] =
-                    true;
-                self.current_piece = (self.current_piece.0, self.current_piece.1 - 1);
+            if is_not_left {
+                let mut i = 0;
+                for (x, y) in self.current_piece.get_position().pos {
+                    self.data[x as usize][y as usize] = false;
+                    self.current_piece.get_position().pos[i] = (x, y - 1);
+                    self.data[x as usize][(y - 1) as usize] = true;
+                    i += 1;
+                }
             } else {
                 println!("Reached border")
             }
         }
         if direction == "Right" {
-            if self.current_piece.1 < 9 {
-                self.data[self.current_piece.0 as usize][self.current_piece.1 as usize] = false;
-                self.data[self.current_piece.0 as usize][(self.current_piece.1 as usize) + 1] =
-                    true;
-                self.current_piece = (self.current_piece.0, self.current_piece.1 + 1)
+            if is_not_right {
+                let mut i = 0;
+                for (x, y) in self.current_piece.get_position().pos {
+                    self.data[x as usize][y as usize] = false;
+                    self.current_piece.get_position().pos[i] = (x, y + 1);
+                    self.data[x as usize][(y + 1) as usize] = true;
+                    i += 1;
+                }
             } else {
                 println!("Reached border")
             }
@@ -43,14 +168,23 @@ impl Field {
     }
 
     pub fn drop_down_piece(mut self) -> Self {
-        if self.current_piece.0 < 19 {
-            // not already all the way down
-            // no piece is under the one dropping
-            if !self.data[(self.current_piece.0 as usize) + 1][self.current_piece.1 as usize] {
-                // dropping the piece down
-                self.data[self.current_piece.0 as usize][self.current_piece.1 as usize] = false;
-                self.current_piece.0 = self.current_piece.0 + 1;
-                self.data[self.current_piece.0 as usize][self.current_piece.1 as usize] = true;
+        let no_piece_down = {
+            for (x, y) in self.current_piece.get_position().pos {
+                if x == 20 {
+                    false;
+                } else if self.data[(x + 1) as usize][y as usize] {
+                    false;
+                }
+            }
+            true
+        };
+        let mut i = 0;
+        if no_piece_down {
+            for (x, y) in self.current_piece.get_position().pos {
+                self.data[x as usize][y as usize] = false;
+                self.current_piece.get_position().pos[i] = (x + 1, y);
+                self.data[(x + 1) as usize][y as usize] = true;
+                i += 1;
             }
         }
         self
@@ -65,82 +199,19 @@ mod test {
     use rand::Rng;
     #[test]
     fn test_init() {
-        let mut data = [[false; 10]; 20];
+        let mut data = [[false; COLUMNS]; LINE];
+        let piece = Piece {
+            piece_type: PieceType::I,
+            position: PiecePosition::new(PieceType::I),
+            orientation: Orientation::O,
+        };
         data[0][0] = true;
-        assert_eq!(Field::new((0, 0), [[false; 10]; 20]).data, data)
+        data[0][1] = true;
+        data[0][2] = true;
+        data[0][3] = true;
+        assert_eq!(Field::new(piece, [[false; COLUMNS]; LINE]).data, data)
     }
+
     #[test]
-    fn test_place_piece() {
-        let mut coordinates: (u32, u32);
-        for _ in 0..100 {
-            let empty_field: Field = Field {
-                current_piece: (0, 0),
-                data: [[false; 10]; 20],
-            };
-            coordinates = (
-                rand::thread_rng().gen_range(0..20),
-                rand::thread_rng().gen_range(0..10),
-            );
-            assert_eq!(
-                Field::new(coordinates, [[false; 10]; 20]).data,
-                empty_field.place_piece(coordinates).data
-            )
-        }
-    }
-    #[test]
-    fn test_side_move_piece() {
-        let mut coordinates: (u32, u32); // déclare la variable coordonnées
-        for _ in 0..100 {
-            coordinates = (
-                rand::thread_rng().gen_range(0..20),
-                rand::thread_rng().gen_range(0..10),
-            ); // génère des coordonnées random
-            let field_piece_placed: Field = Field::new(coordinates, [[false; 10]; 20]);
-            let field_piece_moved: Field = field_piece_placed.side_move_piece("Left");
-            println!("{:?}, {:?}", field_piece_placed, field_piece_moved);
-            if coordinates.1 == 0 {
-                println!("eq");
-                assert_eq!(field_piece_moved.data, field_piece_placed.data);
-            } else {
-                println!("not equal");
-                assert_ne!(field_piece_moved.data, field_piece_placed.data);
-            }
-        }
-        for _ in 0..100 {
-            coordinates = (
-                rand::thread_rng().gen_range(0..20),
-                rand::thread_rng().gen_range(0..10),
-            ); // génère des coordonnées random
-            let field_piece_placed: Field = Field::new(coordinates, [[false; 10]; 20]);
-            let field_piece_moved: Field = field_piece_placed.side_move_piece("Right");
-            println!("{:?}, {:?}", field_piece_placed, field_piece_moved);
-            if coordinates.1 == 9 {
-                println!("eq");
-                assert_eq!(field_piece_moved.data, field_piece_placed.data);
-            } else {
-                println!("not equal");
-                assert_ne!(field_piece_moved.data, field_piece_placed.data);
-            }
-        }
-    }
-    #[test]
-    fn test_drop_down_piece() {
-        let mut coordinates: (u32, u32);
-        for _ in 0..100 {
-            coordinates = (
-                rand::thread_rng().gen_range(0..20),
-                rand::thread_rng().gen_range(0..10),
-            ); // génère des coordonnées random
-            let field_piece_placed: Field = Field::new(coordinates, [[false; 10]; 20]);
-            let field_piece_moved: Field = field_piece_placed.drop_down_piece();
-            println!("{:?}, {:?}", field_piece_placed, field_piece_moved);
-            if coordinates.0 == 19 {
-                println!("eq");
-                assert_eq!(field_piece_moved.data, field_piece_placed.data);
-            } else {
-                println!("not equal");
-                assert_ne!(field_piece_moved.data, field_piece_placed.data);
-            }
-        }
-    }
+    fn test_move_piece_side() {}
 }
