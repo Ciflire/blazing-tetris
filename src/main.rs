@@ -1,5 +1,5 @@
 #[warn(dead_code)]
-mod field;
+mod field_structure;
 
 fn main() {
     println!("Hello, world!");
