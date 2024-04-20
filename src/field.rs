@@ -1,134 +1,8 @@
+use crate::direction::Direction;
+use crate::piece::Piece;
+
 const COLUMNS: usize = 10;
 const LINES: usize = 20;
-use rand::{
-    distributions::{Distribution, Standard},
-    Rng,
-};
-
-#[derive(PartialEq, Eq)]
-enum Direction {
-    Left,
-    Right,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum PieceType {
-    I,
-    O,
-    T,
-    J,
-    L,
-    S,
-    Z,
-}
-
-impl Distribution<PieceType> for Standard {
-    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> PieceType {
-        match rng.gen_range(0..7) {
-            0 => PieceType::I,
-            1 => PieceType::O,
-            2 => PieceType::T,
-            3 => PieceType::J,
-            4 => PieceType::L,
-            5 => PieceType::S,
-            _ => PieceType::Z,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Orientation {
-    O,
-    R,
-    Half,
-    L,
-}
-
-impl Distribution<Orientation> for Standard {
-    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Orientation {
-        match rng.gen_range(0..4) {
-            0 => Orientation::O,
-            1 => Orientation::R,
-            2 => Orientation::Half,
-            _ => Orientation::L,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
-pub struct PieceOffsets {
-    offsets: [(u32, u32); 4],
-}
-
-#[derive(Debug, Clone, Copy)]
-pub struct PiecePosition {
-    pos: [(u32, u32); 4],
-}
-
-impl PiecePosition {
-    fn new(piece_type: PieceType) -> Self {
-        match piece_type {
-            PieceType::I => PiecePosition {
-                pos: [(0, 0), (0, 1), (0, 2), (0, 3)],
-            },
-            PieceType::O => PiecePosition {
-                pos: [(0, 0), (0, 1), (1, 0), (1, 1)],
-            },
-            PieceType::T => PiecePosition {
-                pos: [(0, 1), (1, 0), (1, 1), (1, 2)],
-            },
-            PieceType::J => PiecePosition {
-                pos: [(0, 0), (1, 0), (1, 1), (1, 2)],
-            },
-            PieceType::L => PiecePosition {
-                pos: [(1, 0), (1, 1), (1, 2), (0, 2)],
-            },
-            PieceType::S => PiecePosition {
-                pos: [(0, 1), (0, 2), (1, 0), (1, 1)],
-            },
-            PieceType::Z => PiecePosition {
-                pos: [(0, 0), (0, 1), (1, 1), (1, 2)],
-            },
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
-pub struct Piece {
-    piece_type: PieceType,
-    position: PiecePosition,
-    orientation: Orientation,
-}
-
-impl Piece {
-    pub fn new(piece_type: PieceType, position: PiecePosition, orientation: Orientation) -> Self {
-        Piece {
-            piece_type,
-            position,
-            orientation,
-        }
-    }
-
-    fn get_piece_type(&self) -> PieceType {
-        self.piece_type
-    }
-
-    fn get_position(&self) -> PiecePosition {
-        self.position
-    }
-
-    fn get_orientation(&self) -> Orientation {
-        self.orientation
-    }
-
-    fn move_piece_down(&self) -> Self {
-        let mut position = self.get_position().pos;
-        for i in 0..4 {
-            position[i as usize].0 += 1;
-        }
-        *self
-    }
-}
 
 #[derive(Debug, Clone, Copy)]
 pub struct Field {
@@ -227,16 +101,14 @@ impl Field {
 #[cfg(test)]
 mod test {
 
+    use crate::{orientation::Orientation, piece_position::PiecePosition, piece_type::PieceType};
+
     use super::*;
     #[test]
     fn test_init() {
         let mut data = [[false; COLUMNS]; LINES];
-        let piece_type = rand::random();
-        let piece = Piece {
-            piece_type,
-            position: PiecePosition::new(piece_type),
-            orientation: Orientation::O,
-        };
+        let piece_type: PieceType = rand::random();
+        let piece = Piece::new(piece_type, PiecePosition::new(piece_type), Orientation::O);
         for (x, y) in piece.get_position().pos {
             data[x as usize][y as usize] = true;
         }
@@ -247,11 +119,7 @@ mod test {
     fn test_move_piece_side() {
         let mut data = [[false; COLUMNS]; LINES];
         let piece_type: PieceType = rand::random();
-        let piece = Piece {
-            piece_type,
-            position: PiecePosition::new(piece_type),
-            orientation: Orientation::O,
-        };
+        let piece: Piece = Piece::new(piece_type, PiecePosition::new(piece_type), Orientation::O);
         let field = Field::new(piece, [[false; COLUMNS]; LINES]);
         for (x, y) in piece.get_position().pos {
             data[x as usize][(y + 1) as usize] = true;
@@ -263,11 +131,7 @@ mod test {
     fn test_drop_down_piece() {
         let mut data = [[false; COLUMNS]; LINES];
         let piece_type: PieceType = rand::random();
-        let piece = Piece {
-            piece_type,
-            position: PiecePosition::new(piece_type),
-            orientation: Orientation::O,
-        };
+        let piece = Piece::new(piece_type, PiecePosition::new(piece_type), Orientation::O);
         let field = Field::new(piece, [[false; COLUMNS]; LINES]);
         for (x, y) in piece.get_position().pos {
             data[(x + 1) as usize][y as usize] = true;
