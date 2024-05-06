@@ -1,1 +1,26 @@
-# devTemplate
+# TODO
+- [ ] Functionnalities
+  - [x] Move Left/Right
+  - [x] Move Down
+  - [x] Clockwise rotation
+    - [x] I piece
+    - [ ] O piece
+    - [ ] J piece
+    - [ ] L piece
+    - [ ] S piece
+    - [ ] Z piece
+    - [ ] T piece
+  - [x] Anticlockwise rotation
+    - [ ] I piece
+    - [ ] O piece
+    - [ ] J piece
+    - [ ] L piece
+    - [ ] S piece
+    - [ ] Z piece
+    - [ ] T piece
+  - [ ] Clear lines
+  - [ ] Counting points
+  - [ ] Increasing difficulty
+  - [ ] Changing commands
+- [ ] Code readability
+  - [ ] Enum for borders 
