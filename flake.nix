@@ -22,6 +22,7 @@
               rustc
               rust-analyzer
               rustfmt
+              SDL2
             ];
             shellHook = "";
           };
