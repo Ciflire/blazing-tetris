@@ -16,7 +16,8 @@ use piece_position::PiecePosition;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::pixels::Color;
-use std::borrow::Borrow;
+use sdl2::sys::SDL_GetTicks;
+use sdl2::TimerSubsystem;
 use std::cmp::min;
 use std::time::Duration;
 
@@ -27,6 +28,7 @@ use crate::draw_field::draw_inside_field;
 
 pub fn main() {
     let piece_type = rand::random();
+
     let mut field = Field::new(Piece::new(
         piece_type,
         PiecePosition::new(piece_type),
@@ -48,7 +50,6 @@ pub fn main() {
     canvas.clear();
     canvas.present();
     let mut event_pump = sdl_context.event_pump().unwrap();
-    let mut i = 0;
     'running: loop {
         clear_canvas(&mut canvas);
         let (x, y) = canvas.window().size();
@@ -88,11 +89,14 @@ pub fn main() {
                     keycode: Some(Keycode::R),
                     ..
                 } => field.move_piece(direction::Direction::RotPlus),
+                Event::KeyDown {
+                    keycode: Some(Keycode::E),
+                    ..
+                } => field.move_piece(direction::Direction::RotMinus),
                 _ => {}
             }
         }
         // The rest of the game loop goes here...
-
         canvas.present();
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
     }

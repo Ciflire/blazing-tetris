@@ -10,7 +10,7 @@ pub fn draw_field(canvas: &mut WindowCanvas, x: &u32, y: &u32) {
     canvas.draw_rect(format).unwrap();
 }
 
-fn draw_case(canvas: &mut WindowCanvas, x: &u32, y: &u32) {
+fn _draw_case(canvas: &mut WindowCanvas, x: &u32, y: &u32) {
     let format: Rect = Rect::new(*x as i32, *y as i32, SQUARE_SIZE, SQUARE_SIZE);
     canvas.draw_rect(format).unwrap();
 }

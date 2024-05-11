@@ -3,24 +3,13 @@
   - [x] Move Left/Right
   - [x] Move Down
   - [x] Clockwise rotation
-    - [x] I piece
-    - [ ] O piece
-    - [ ] J piece
-    - [ ] L piece
-    - [ ] S piece
-    - [ ] Z piece
-    - [ ] T piece
   - [x] Anticlockwise rotation
-    - [ ] I piece
-    - [ ] O piece
-    - [ ] J piece
-    - [ ] L piece
-    - [ ] S piece
-    - [ ] Z piece
-    - [ ] T piece
-  - [ ] Clear lines
-  - [ ] Counting points
+  - [x] Clear lines
+  - [ ] Auto descent
   - [ ] Increasing difficulty
+  - [ ] Textures/colors
+  - [ ] Counting points
   - [ ] Changing commands
 - [ ] Code readability
   - [ ] Enum for borders 
+  - [ ] NEVER USE AGAIN ANY GETTERS/SETTERS

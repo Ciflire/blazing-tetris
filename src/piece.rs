@@ -1,7 +1,5 @@
 use crate::{
-    direction::{self, Direction},
-    orientation::Orientation,
-    piece_position::PiecePosition,
+    direction::Direction, orientation::Orientation, piece_position::PiecePosition,
     piece_type::PieceType,
 };
 
@@ -20,8 +18,7 @@ impl Piece {
             orientation,
         }
     }
-
-    fn get_piece_type(&self) -> PieceType {
+    fn _get_piece_type(&self) -> PieceType {
         self.piece_type
     }
 
@@ -29,11 +26,11 @@ impl Piece {
         self.position
     }
 
-    fn get_orientation(&self) -> Orientation {
+    fn _get_orientation(&self) -> Orientation {
         self.orientation
     }
 
-    pub fn piece_update_position(&mut self, direction: Direction) {
+    pub fn piece_next_position(&self, direction: Direction) -> PiecePosition {
         let (x_min, y_min) = (
             self.get_position()
                 .pos
@@ -41,115 +38,445 @@ impl Piece {
                 .iter()
                 .min()
                 .unwrap()
-                .to_owned() as u32,
+                .to_owned(),
             self.get_position()
                 .pos
                 .map(|t| t.1)
                 .iter()
                 .min()
                 .unwrap()
-                .to_owned() as u32,
+                .to_owned(),
         );
-        match direction {
-            Direction::Left => {
-                for i in 0..4 {
-                    self.position.pos[i as usize].1 -= 1;
+        let mut res = PiecePosition { pos: [(0, 0); 4] };
+
+        match (direction, self.piece_type, self.orientation) {
+            (Direction::Left, _, _) => {
+                for (i, (x, y)) in (0..4).zip(self.get_position().pos) {
+                    res.pos[i] = (x, y - 1);
                 }
+                res
             }
-            Direction::Right => {
-                for i in 0..4 {
-                    self.position.pos[i as usize].1 += 1;
+
+            (Direction::Right, _, _) => {
+                for (i, (x, y)) in (0..4).zip(self.get_position().pos) {
+                    res.pos[i] = (x, y + 1);
                 }
+                res
             }
-            Direction::Down => {
-                for i in 0..4 {
-                    self.position.pos[i as usize].0 += 1;
+            (Direction::Down, _, _) => {
+                for (i, (x, y)) in (0..4).zip(self.get_position().pos) {
+                    res.pos[i] = (x + 1, y);
                 }
+                res
             }
-            Direction::RotPlus => match (self.piece_type, self.orientation) {
-                (PieceType::I, Orientation::O) => {
-                    self.position = PiecePosition {
-                        pos: [
-                            (x_min - 1, y_min + 2),
-                            (x_min, y_min + 2),
-                            (x_min + 1, y_min + 2),
-                            (x_min + 2, y_min + 2),
-                        ],
-                    };
-                    self.orientation = crate::orientation::Orientation::R;
-                }
-                (PieceType::I, Orientation::R) => todo!(),
-                (PieceType::I, Orientation::Half) => todo!(),
-                (PieceType::I, Orientation::L) => todo!(),
-                (PieceType::O, Orientation::O) => todo!(),
-                (PieceType::O, Orientation::R) => todo!(),
-                (PieceType::O, Orientation::Half) => todo!(),
-                (PieceType::O, Orientation::L) => todo!(),
-                (PieceType::T, Orientation::O) => todo!(),
-                (PieceType::T, Orientation::R) => todo!(),
-                (PieceType::T, Orientation::Half) => todo!(),
-                (PieceType::T, Orientation::L) => todo!(),
-                (PieceType::J, Orientation::O) => todo!(),
-                (PieceType::J, Orientation::R) => todo!(),
-                (PieceType::J, Orientation::Half) => todo!(),
-                (PieceType::J, Orientation::L) => todo!(),
-                (PieceType::L, Orientation::O) => todo!(),
-                (PieceType::L, Orientation::R) => todo!(),
-                (PieceType::L, Orientation::Half) => todo!(),
-                (PieceType::L, Orientation::L) => todo!(),
-                (PieceType::S, Orientation::O) => todo!(),
-                (PieceType::S, Orientation::R) => todo!(),
-                (PieceType::S, Orientation::Half) => todo!(),
-                (PieceType::S, Orientation::L) => todo!(),
-                (PieceType::Z, Orientation::O) => todo!(),
-                (PieceType::Z, Orientation::R) => todo!(),
-                (PieceType::Z, Orientation::Half) => todo!(),
-                (PieceType::Z, Orientation::L) => todo!(),
+            (Direction::RotPlus, PieceType::I, Orientation::O) => PiecePosition {
+                pos: [
+                    (x_min - 1, y_min + 2),
+                    (x_min, y_min + 2),
+                    (x_min + 1, y_min + 2),
+                    (x_min + 2, y_min + 2),
+                ],
             },
-            Direction::RotMinus => match (self.piece_type, self.orientation) {
-                (PieceType::I, Orientation::O) => todo!(),
-                (PieceType::I, Orientation::R) => todo!(),
-                (PieceType::I, Orientation::Half) => todo!(),
-                (PieceType::I, Orientation::L) => todo!(),
-                (PieceType::O, Orientation::O) => todo!(),
-                (PieceType::O, Orientation::R) => todo!(),
-                (PieceType::O, Orientation::Half) => todo!(),
-                (PieceType::O, Orientation::L) => todo!(),
-                (PieceType::T, Orientation::O) => todo!(),
-                (PieceType::T, Orientation::R) => todo!(),
-                (PieceType::T, Orientation::Half) => todo!(),
-                (PieceType::T, Orientation::L) => todo!(),
-                (PieceType::J, Orientation::O) => todo!(),
-                (PieceType::J, Orientation::R) => todo!(),
-                (PieceType::J, Orientation::Half) => todo!(),
-                (PieceType::J, Orientation::L) => todo!(),
-                (PieceType::L, Orientation::O) => todo!(),
-                (PieceType::L, Orientation::R) => todo!(),
-                (PieceType::L, Orientation::Half) => todo!(),
-                (PieceType::L, Orientation::L) => todo!(),
-                (PieceType::S, Orientation::O) => todo!(),
-                (PieceType::S, Orientation::R) => todo!(),
-                (PieceType::S, Orientation::Half) => todo!(),
-                (PieceType::S, Orientation::L) => todo!(),
-                (PieceType::Z, Orientation::O) => todo!(),
-                (PieceType::Z, Orientation::R) => todo!(),
-                (PieceType::Z, Orientation::Half) => todo!(),
-                (PieceType::Z, Orientation::L) => todo!(),
+            (Direction::RotPlus, PieceType::I, Orientation::R) => PiecePosition {
+                pos: [
+                    (x_min + 2, y_min - 2),
+                    (x_min + 2, y_min - 1),
+                    (x_min + 2, y_min),
+                    (x_min + 2, y_min + 1),
+                ],
+            },
+            (Direction::RotPlus, PieceType::I, Orientation::Half) => PiecePosition {
+                pos: [
+                    (x_min - 2, y_min + 1),
+                    (x_min - 1, y_min + 1),
+                    (x_min, y_min + 1),
+                    (x_min + 1, y_min + 1),
+                ],
+            },
+            (Direction::RotPlus, PieceType::I, Orientation::L) => PiecePosition {
+                pos: [
+                    (x_min + 1, y_min - 1),
+                    (x_min + 1, y_min),
+                    (x_min + 1, y_min + 1),
+                    (x_min + 1, y_min + 2),
+                ],
+            },
+            (Direction::RotPlus, PieceType::O, Orientation::O) => self.get_position(),
+            (Direction::RotPlus, PieceType::O, Orientation::R) => self.get_position(),
+            (Direction::RotPlus, PieceType::O, Orientation::Half) => self.get_position(),
+            (Direction::RotPlus, PieceType::O, Orientation::L) => self.get_position(),
+            (Direction::RotPlus, PieceType::T, Orientation::O) => PiecePosition {
+                pos: [
+                    (x_min, y_min + 1),
+                    (x_min + 1, y_min + 1),
+                    (x_min + 1, y_min + 2),
+                    (x_min + 2, y_min + 1),
+                ],
+            },
+            (Direction::RotPlus, PieceType::T, Orientation::R) => PiecePosition {
+                pos: [
+                    (x_min + 1, y_min - 1),
+                    (x_min + 1, y_min),
+                    (x_min + 1, y_min + 1),
+                    (x_min + 2, y_min),
+                ],
+            },
+            (Direction::RotPlus, PieceType::T, Orientation::Half) => PiecePosition {
+                pos: [
+                    (x_min, y_min),
+                    (x_min - 1, y_min + 1),
+                    (x_min, y_min + 1),
+                    (x_min + 1, y_min + 1),
+                ],
+            },
+            (Direction::RotPlus, PieceType::T, Orientation::L) => PiecePosition {
+                pos: [
+                    (x_min, y_min + 1),
+                    (x_min + 1, y_min),
+                    (x_min + 1, y_min + 1),
+                    (x_min + 1, y_min + 2),
+                ],
+            },
+            (Direction::RotPlus, PieceType::J, Orientation::O) => PiecePosition {
+                pos: [
+                    (x_min, y_min + 1),
+                    (x_min, y_min + 2),
+                    (x_min + 1, y_min + 1),
+                    (x_min + 2, y_min + 1),
+                ],
+            },
+            (Direction::RotPlus, PieceType::J, Orientation::R) => PiecePosition {
+                pos: [
+                    (x_min + 1, y_min - 1),
+                    (x_min + 1, y_min),
+                    (x_min + 1, y_min + 1),
+                    (x_min + 2, y_min + 1),
+                ],
+            },
+            (Direction::RotPlus, PieceType::J, Orientation::Half) => PiecePosition {
+                pos: [
+                    (x_min - 1, y_min + 1),
+                    (x_min, y_min + 1),
+                    (x_min + 1, y_min),
+                    (x_min + 1, y_min + 1),
+                ],
+            },
+            (Direction::RotPlus, PieceType::J, Orientation::L) => PiecePosition {
+                pos: [
+                    (x_min, y_min),
+                    (x_min + 1, y_min),
+                    (x_min + 1, y_min + 1),
+                    (x_min + 1, y_min + 2),
+                ],
+            },
+            (Direction::RotPlus, PieceType::L, Orientation::O) => PiecePosition {
+                pos: [
+                    (x_min, y_min + 1),
+                    (x_min, y_min + 2),
+                    (x_min + 1, y_min + 1),
+                    (x_min + 2, y_min + 1),
+                ],
+            },
+            (Direction::RotPlus, PieceType::L, Orientation::R) => PiecePosition {
+                pos: [
+                    (x_min + 1, y_min - 1),
+                    (x_min + 1, y_min),
+                    (x_min + 1, y_min + 1),
+                    (x_min + 2, y_min + 1),
+                ],
+            },
+            (Direction::RotPlus, PieceType::L, Orientation::Half) => PiecePosition {
+                pos: [
+                    (x_min - 1, y_min + 1),
+                    (x_min, y_min + 1),
+                    (x_min + 1, y_min),
+                    (x_min + 1, y_min + 1),
+                ],
+            },
+            (Direction::RotPlus, PieceType::L, Orientation::L) => PiecePosition {
+                pos: [
+                    (x_min, y_min),
+                    (x_min + 1, y_min),
+                    (x_min + 1, y_min + 1),
+                    (x_min + 1, y_min + 2),
+                ],
+            },
+            (Direction::RotPlus, PieceType::S, Orientation::O) => PiecePosition {
+                pos: [
+                    (x_min, y_min + 1),
+                    (x_min + 1, y_min + 1),
+                    (x_min + 1, y_min + 2),
+                    (x_min + 2, y_min + 2),
+                ],
+            },
+            (Direction::RotPlus, PieceType::S, Orientation::R) => PiecePosition {
+                pos: [
+                    (x_min + 1, y_min),
+                    (x_min + 1, y_min + 1),
+                    (x_min + 2, y_min - 1),
+                    (x_min + 2, y_min),
+                ],
+            },
+            (Direction::RotPlus, PieceType::S, Orientation::Half) => PiecePosition {
+                pos: [
+                    (x_min - 1, y_min),
+                    (x_min, y_min),
+                    (x_min, y_min + 1),
+                    (x_min + 1, y_min + 1),
+                ],
+            },
+            (Direction::RotPlus, PieceType::S, Orientation::L) => PiecePosition {
+                pos: [
+                    (x_min, y_min + 1),
+                    (x_min, y_min + 2),
+                    (x_min + 1, y_min),
+                    (x_min + 1, y_min + 1),
+                ],
+            },
+            (Direction::RotPlus, PieceType::Z, Orientation::O) => PiecePosition {
+                pos: [
+                    (x_min, y_min + 2),
+                    (x_min + 1, y_min + 1),
+                    (x_min + 1, y_min + 2),
+                    (x_min + 2, y_min + 1),
+                ],
+            },
+            (Direction::RotPlus, PieceType::Z, Orientation::R) => PiecePosition {
+                pos: [
+                    (x_min + 1, y_min - 1),
+                    (x_min + 1, y_min),
+                    (x_min + 2, y_min),
+                    (x_min + 2, y_min + 1),
+                ],
+            },
+            (Direction::RotPlus, PieceType::Z, Orientation::Half) => PiecePosition {
+                pos: [
+                    (x_min - 1, y_min + 1),
+                    (x_min, y_min),
+                    (x_min, y_min + 1),
+                    (x_min + 1, y_min),
+                ],
+            },
+            (Direction::RotPlus, PieceType::Z, Orientation::L) => PiecePosition {
+                pos: [
+                    (x_min, y_min),
+                    (x_min, y_min + 1),
+                    (x_min + 1, y_min + 1),
+                    (x_min + 1, y_min + 2),
+                ],
+            },
+            (Direction::RotMinus, PieceType::I, Orientation::O) => PiecePosition {
+                pos: [
+                    (x_min - 1, y_min + 1),
+                    (x_min, y_min + 1),
+                    (x_min + 1, y_min + 1),
+                    (x_min + 2, y_min + 1),
+                ],
+            },
+            (Direction::RotMinus, PieceType::I, Orientation::R) => PiecePosition {
+                pos: [
+                    (x_min + 1, y_min - 2),
+                    (x_min + 1, y_min - 1),
+                    (x_min + 1, y_min),
+                    (x_min + 1, y_min + 1),
+                ],
+            },
+            (Direction::RotMinus, PieceType::I, Orientation::Half) => PiecePosition {
+                pos: [
+                    (x_min - 2, y_min + 2),
+                    (x_min - 1, y_min + 2),
+                    (x_min, y_min + 2),
+                    (x_min + 1, y_min + 2),
+                ],
+            },
+            (Direction::RotMinus, PieceType::I, Orientation::L) => PiecePosition {
+                pos: [
+                    (x_min + 2, y_min - 1),
+                    (x_min + 2, y_min),
+                    (x_min + 2, y_min + 1),
+                    (x_min + 2, y_min + 2),
+                ],
+            },
+            (Direction::RotMinus, PieceType::O, Orientation::O) => self.get_position(),
+            (Direction::RotMinus, PieceType::O, Orientation::R) => self.get_position(),
+            (Direction::RotMinus, PieceType::O, Orientation::Half) => self.get_position(),
+            (Direction::RotMinus, PieceType::O, Orientation::L) => self.get_position(),
+            (Direction::RotMinus, PieceType::T, Orientation::O) => PiecePosition {
+                pos: [
+                    (x_min, y_min + 1),
+                    (x_min + 1, y_min),
+                    (x_min + 1, y_min + 1),
+                    (x_min + 2, y_min + 1),
+                ],
+            },
+            (Direction::RotMinus, PieceType::T, Orientation::R) => PiecePosition {
+                pos: [
+                    (x_min, y_min),
+                    (x_min + 1, y_min - 1),
+                    (x_min + 1, y_min),
+                    (x_min + 1, y_min + 1),
+                ],
+            },
+            (Direction::RotMinus, PieceType::T, Orientation::Half) => PiecePosition {
+                pos: [
+                    (x_min - 1, y_min + 1),
+                    (x_min, y_min + 1),
+                    (x_min, y_min + 2),
+                    (x_min + 1, y_min + 1),
+                ],
+            },
+            (Direction::RotMinus, PieceType::T, Orientation::L) => PiecePosition {
+                pos: [
+                    (x_min + 1, y_min),
+                    (x_min + 1, y_min + 1),
+                    (x_min + 1, y_min + 2),
+                    (x_min + 2, y_min + 1),
+                ],
+            },
+            (Direction::RotMinus, PieceType::J, Orientation::O) => PiecePosition {
+                pos: [
+                    (x_min, y_min + 1),
+                    (x_min + 1, y_min + 1),
+                    (x_min + 2, y_min + 1),
+                    (x_min + 2, y_min),
+                ],
+            },
+            (Direction::RotMinus, PieceType::J, Orientation::R) => PiecePosition {
+                pos: [
+                    (x_min, y_min - 1),
+                    (x_min + 1, y_min - 1),
+                    (x_min + 1, y_min),
+                    (x_min + 1, y_min + 1),
+                ],
+            },
+            (Direction::RotMinus, PieceType::J, Orientation::Half) => PiecePosition {
+                pos: [
+                    (x_min - 1, y_min + 1),
+                    (x_min, y_min + 1),
+                    (x_min + 1, y_min + 1),
+                    (x_min - 1, y_min + 2),
+                ],
+            },
+            (Direction::RotMinus, PieceType::J, Orientation::L) => PiecePosition {
+                pos: [
+                    (x_min + 1, y_min),
+                    (x_min + 1, y_min + 1),
+                    (x_min + 1, y_min + 2),
+                    (x_min + 2, y_min + 2),
+                ],
+            },
+            (Direction::RotMinus, PieceType::L, Orientation::O) => PiecePosition {
+                pos: [
+                    (x_min, y_min),
+                    (x_min, y_min + 1),
+                    (x_min + 1, y_min + 1),
+                    (x_min + 2, y_min + 1),
+                ],
+            },
+            (Direction::RotMinus, PieceType::L, Orientation::R) => PiecePosition {
+                pos: [
+                    (x_min, y_min + 1),
+                    (x_min + 1, y_min - 1),
+                    (x_min + 1, y_min),
+                    (x_min + 1, y_min + 1),
+                ],
+            },
+            (Direction::RotMinus, PieceType::L, Orientation::Half) => PiecePosition {
+                pos: [
+                    (x_min - 1, y_min + 1),
+                    (x_min, y_min + 1),
+                    (x_min + 1, y_min + 1),
+                    (x_min + 1, y_min + 2),
+                ],
+            },
+            (Direction::RotMinus, PieceType::L, Orientation::L) => PiecePosition {
+                pos: [
+                    (x_min + 1, y_min),
+                    (x_min + 1, y_min + 1),
+                    (x_min + 1, y_min + 2),
+                    (x_min + 2, y_min),
+                ],
+            },
+            (Direction::RotMinus, PieceType::S, Orientation::O) => PiecePosition {
+                pos: [
+                    (x_min, y_min),
+                    (x_min + 1, y_min),
+                    (x_min + 1, y_min + 1),
+                    (x_min + 2, y_min + 1),
+                ],
+            },
+            (Direction::RotMinus, PieceType::S, Orientation::R) => PiecePosition {
+                pos: [
+                    (x_min, y_min),
+                    (x_min, y_min + 1),
+                    (x_min + 1, y_min - 1),
+                    (x_min + 1, y_min),
+                ],
+            },
+            (Direction::RotMinus, PieceType::S, Orientation::Half) => PiecePosition {
+                pos: [
+                    (x_min - 1, y_min + 1),
+                    (x_min, y_min + 1),
+                    (x_min, y_min + 2),
+                    (x_min + 1, y_min + 2),
+                ],
+            },
+            (Direction::RotMinus, PieceType::S, Orientation::L) => PiecePosition {
+                pos: [
+                    (x_min + 1, y_min + 1),
+                    (x_min + 1, y_min + 2),
+                    (x_min + 2, y_min),
+                    (x_min + 2, y_min + 1),
+                ],
+            },
+            (Direction::RotMinus, PieceType::Z, Orientation::O) => PiecePosition {
+                pos: [
+                    (x_min, y_min + 1),
+                    (x_min + 1, y_min),
+                    (x_min + 1, y_min + 1),
+                    (x_min + 2, y_min),
+                ],
+            },
+            (Direction::RotMinus, PieceType::Z, Orientation::R) => PiecePosition {
+                pos: [
+                    (x_min, y_min - 1),
+                    (x_min, y_min),
+                    (x_min + 1, y_min),
+                    (x_min + 1, y_min + 1),
+                ],
+            },
+            (Direction::RotMinus, PieceType::Z, Orientation::Half) => PiecePosition {
+                pos: [
+                    (x_min - 1, y_min + 2),
+                    (x_min, y_min + 1),
+                    (x_min, y_min + 2),
+                    (x_min + 1, y_min + 1),
+                ],
+            },
+            (Direction::RotMinus, PieceType::Z, Orientation::L) => PiecePosition {
+                pos: [
+                    (x_min + 1, y_min),
+                    (x_min + 1, y_min + 1),
+                    (x_min + 2, y_min + 1),
+                    (x_min + 2, y_min + 2),
+                ],
             },
         }
     }
 
-    fn check_down(&self) -> Vec<(u32, u32)> {
-        let res: Vec<(u32, u32)>;
-        match self.piece_type {
-            PieceType::I => todo!(),
-            PieceType::O => todo!(),
-            PieceType::T => todo!(),
-            PieceType::J => todo!(),
-            PieceType::L => todo!(),
-            PieceType::S => todo!(),
-            PieceType::Z => todo!(),
-        }
-        res
+    pub fn piece_update_position(&mut self, direction: Direction) {
+        let next_position = self.piece_next_position(direction);
+        self.position = next_position;
+        match (self.orientation, direction) {
+            (Orientation::O, Direction::RotPlus) => self.orientation = Orientation::R,
+            (Orientation::O, Direction::RotMinus) => self.orientation = Orientation::L,
+            (Orientation::R, Direction::RotPlus) => self.orientation = Orientation::Half,
+            (Orientation::R, Direction::RotMinus) => self.orientation = Orientation::O,
+            (Orientation::Half, Direction::RotPlus) => self.orientation = Orientation::L,
+            (Orientation::Half, Direction::RotMinus) => self.orientation = Orientation::R,
+            (Orientation::L, Direction::RotPlus) => self.orientation = Orientation::O,
+            (Orientation::L, Direction::RotMinus) => self.orientation = Orientation::Half,
+            _ => (),
+        };
     }
 }

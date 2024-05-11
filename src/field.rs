@@ -1,8 +1,10 @@
-use std::iter::Map;
+use sdl2::libc::{printf, useconds_t};
 
 use crate::constants::{COLUMNS, LINES};
 use crate::direction::Direction;
 use crate::piece::Piece;
+use crate::piece_position::PiecePosition;
+use crate::piece_type::PieceType;
 
 #[derive(Debug, Clone)]
 pub struct Field {
@@ -41,188 +43,26 @@ impl Field {
     fn no_piece_around(&self, direction: &Direction) -> bool {
         let piece_to_move = self.current_piece;
         let other_pieces = &self.old_pieces;
-
-        let (x_min, y_min) = (
-            piece_to_move
-                .get_position()
-                .pos
-                .map(|t| t.0)
-                .iter()
-                .min()
-                .unwrap()
-                .to_owned() as i32,
-            piece_to_move
-                .get_position()
-                .pos
-                .map(|t| t.1)
-                .iter()
-                .min()
-                .unwrap()
-                .to_owned() as i32,
-        );
-        // test for walls
-        for (x_current_piece, y_current_piece) in piece_to_move.get_position().pos {
-            if (*direction == Direction::Left && y_current_piece == 0)
-                || (*direction == Direction::Right && y_current_piece == 9)
-                || (*direction == Direction::Down && x_current_piece == 19)
+        let position_to_test = piece_to_move.piece_next_position(*direction);
+        for (x_next_pos, y_next_pos) in position_to_test.pos {
+            if x_next_pos < 0
+                || x_next_pos >= LINES as i32
+                || y_next_pos < 0
+                || y_next_pos >= COLUMNS as i32
             {
                 return false;
             }
+            for piece in other_pieces {
+                for (x_other_piece, y_other_piece) in piece.get_position().pos {
+                    // out of bounds
+                    // Overlapping
+                    if x_next_pos == x_other_piece && y_next_pos == y_other_piece {
+                        return false;
+                    }
+                }
+            }
         }
-        match (
-            *direction,
-            piece_to_move.piece_type,
-            piece_to_move.orientation,
-        ) {
-            (Direction::Left, _, _) => {
-                for (x_current_piece, y_current_piece) in piece_to_move.get_position().pos {
-                    for piece in other_pieces {
-                        for (x_other_piece, y_other_piece) in piece.get_position().pos {
-                            if x_current_piece + 1 == x_other_piece
-                                && y_current_piece == y_other_piece
-                            {
-                                return false;
-                            }
-                        }
-                    }
-                }
-                return true;
-            }
-
-            (Direction::Right, _, _) => {
-                for (x_current_piece, y_current_piece) in piece_to_move.get_position().pos {
-                    for piece in other_pieces {
-                        for (x_other_piece, y_other_piece) in piece.get_position().pos {
-                            if x_current_piece - 1 == x_other_piece
-                                && y_current_piece == y_other_piece
-                            {
-                                return false;
-                            }
-                        }
-                    }
-                }
-                return true;
-            }
-            (Direction::Down, _, _) => {
-                for (x_current_piece, y_current_piece) in piece_to_move.get_position().pos {
-                    for piece in other_pieces {
-                        for (x_other_piece, y_other_piece) in piece.get_position().pos {
-                            if x_current_piece == x_other_piece
-                                && y_current_piece + 1 == y_other_piece
-                            {
-                                return false;
-                            }
-                        }
-                    }
-                }
-                true
-            }
-            (
-                Direction::RotPlus,
-                crate::piece_type::PieceType::I,
-                crate::orientation::Orientation::O,
-            ) => {
-                let pos_after_rotation = [
-                    (x_min - 1, y_min + 2),
-                    (x_min, y_min + 2),
-                    (x_min + 1, y_min + 2),
-                    (x_min + 2, y_min + 2),
-                ];
-
-                let check_validity_min = {
-                    for (i, j) in pos_after_rotation {
-                        if i < 0 || j > 19 {
-                            return false;
-                        }
-                    }
-                    true
-                };
-
-                check_validity_min
-            }
-            (
-                Direction::RotPlus,
-                crate::piece_type::PieceType::I,
-                crate::orientation::Orientation::R,
-            ) => {
-                let pos_after_rotation = [
-                    (x_min + 2, y_min - 2),
-                    (x_min + 2, y_min - 1),
-                    (x_min + 2, y_min),
-                    (x_min + 2, y_min + 1),
-                ];
-
-                let check_validity = {
-                    for (i, j) in pos_after_rotation {
-                        if i < 0 || j > 19 {
-                            return false;
-                        }
-                    }
-                    true
-                };
-
-                check_validity
-            }
-            (
-                Direction::RotPlus,
-                crate::piece_type::PieceType::I,
-                crate::orientation::Orientation::Half,
-            ) => {
-                let pos_after_rotation = [
-                    (x_min - 2, y_min + 1),
-                    (x_min - 1, y_min + 1),
-                    (x_min, y_min + 1),
-                    (x_min + 1, y_min + 1),
-                ];
-
-                let check_validity = {
-                    for (i, j) in pos_after_rotation {
-                        if i < 0 || j > 19 {
-                            return false;
-                        }
-                    }
-                    true
-                };
-
-                check_validity
-            }
-            (
-                Direction::RotPlus,
-                crate::piece_type::PieceType::I,
-                crate::orientation::Orientation::L,
-            ) => {
-                let pos_after_rotation = [
-                    (x_min - 1, y_min + 2),
-                    (x_min, y_min + 2),
-                    (x_min + 1, y_min + 2),
-                    (x_min + 2, y_min + 2),
-                ];
-
-                let check_validity = {
-                    for (i, j) in pos_after_rotation {
-                        if i < 0 || j > 19 {
-                            return false;
-                        }
-                    }
-                    true
-                };
-
-                check_validity
-            }
-            (Direction::RotPlus, crate::piece_type::PieceType::O, _) => true,
-            (Direction::RotPlus, crate::piece_type::PieceType::T, _) => todo!(),
-            (Direction::RotPlus, crate::piece_type::PieceType::J, _) => todo!(),
-            (Direction::RotPlus, crate::piece_type::PieceType::L, _) => todo!(),
-            (Direction::RotPlus, crate::piece_type::PieceType::S, _) => todo!(),
-            (Direction::RotPlus, crate::piece_type::PieceType::Z, _) => todo!(),
-            (Direction::RotMinus, crate::piece_type::PieceType::I, _) => todo!(),
-            (Direction::RotMinus, crate::piece_type::PieceType::O, _) => true,
-            (Direction::RotMinus, crate::piece_type::PieceType::T, _) => todo!(),
-            (Direction::RotMinus, crate::piece_type::PieceType::J, _) => todo!(),
-            (Direction::RotMinus, crate::piece_type::PieceType::L, _) => todo!(),
-            (Direction::RotMinus, crate::piece_type::PieceType::S, _) => todo!(),
-            (Direction::RotMinus, crate::piece_type::PieceType::Z, _) => todo!(),
-        }
+        true
     }
 
     pub fn move_piece(&mut self, direction: Direction) {
@@ -231,43 +71,76 @@ impl Field {
             self.remove_piece();
             self.current_piece.piece_update_position(direction);
             self.place_piece(self.current_piece);
+        } else if !will_move && direction == Direction::Down {
+            self.old_pieces.push(self.current_piece);
+            self.clear_lines();
+            let new_piece_type: PieceType = rand::random();
+            let new_piece = Piece::new(
+                new_piece_type,
+                PiecePosition::new(new_piece_type),
+                crate::orientation::Orientation::O,
+            );
+            self.current_piece = new_piece;
         }
     }
 
-    fn drop_down_piece(mut self) -> Self {
-        let no_piece_down = {
-            for (x, y) in self.current_piece.get_position().pos {
-                if x == 20 {
-                    false;
-                } else if self.data[(x + 1) as usize][y as usize] {
-                    false;
+    pub fn lines_to_clear(&self) -> Vec<usize> {
+        let mut res = vec![];
+        'outer: for i in 0..LINES {
+            for j in 0..COLUMNS {
+                if !self.data[i as usize][j as usize] {
+                    continue 'outer;
                 }
             }
-            true
-        };
-        let mut i = 0;
-        if no_piece_down {
-            for (x, y) in self.current_piece.get_position().pos {
-                self.data[x as usize][y as usize] = false;
-                self.current_piece.position.pos[i] = (x + 1, y);
-                i += 1;
-            }
-            for (x, y) in self.current_piece.get_position().pos {
-                self.data[x as usize][y as usize] = true;
-            }
+            res.push(i);
         }
-        self
+        res
     }
 
-    fn rotate_piece(mut self, direction: Direction) -> Self {
-        self
+    pub fn clear_lines(&mut self) {
+        let list_line_to_clear = self.lines_to_clear();
+        println!("{:?}", list_line_to_clear);
+
+        // if no line to clear exit function
+        if list_line_to_clear.len() == 0 {
+            return;
+        }
+        // Moving pieces down
+        for piece in &mut self.old_pieces {
+            for (i, (x, y)) in (0..4).zip(piece.get_position().pos) {
+                if x != -1 && x < list_line_to_clear[0] as i32 {
+                    piece.position.pos[i] = (x + list_line_to_clear.len() as i32, y);
+                }
+            }
+        }
+        // Deleting element of pieces that should no longer be rendered
+        for elt in list_line_to_clear.clone() {
+            for col in 0..COLUMNS {
+                self.data[elt][col] = false;
+            }
+            for piece in &mut self.old_pieces {
+                println!("{:?}", piece);
+                for (i, (mut x, mut y)) in (0..4).zip(piece.get_position().pos) {
+                    if (x as usize) == elt {
+                        piece.position.pos[i] = (-1, -1);
+                    }
+                }
+                println!("{:?}", piece);
+            }
+        }
+        // Moving line above deletions
+        for lines in (0..list_line_to_clear[0]).rev() {
+            self.data[(lines + list_line_to_clear.len()) as usize] = self.data[lines];
+        }
+        // Reinitializing lines
+        for line in 0..list_line_to_clear.len() {
+            self.data[line] = [false; COLUMNS]
+        }
     }
 }
 
 #[cfg(test)]
 mod test {
-
-    use std::cmp::min;
 
     use crate::{
         constants::{COLUMNS, LINES},
@@ -312,6 +185,7 @@ mod test {
         }
         data[2][0] = true;
         field.data[2][0] = true;
-        assert_eq!(field.drop_down_piece().data, data)
+        field.move_piece(Direction::Down);
+        assert_eq!(field.data, data)
     }
 }

@@ -2,7 +2,7 @@ use crate::piece_type::PieceType;
 
 #[derive(Debug, Clone, Copy)]
 pub struct PiecePosition {
-    pub pos: [(u32, u32); 4],
+    pub pos: [(i32, i32); 4],
 }
 impl PiecePosition {
     pub fn new(piece_type: PieceType) -> Self {
